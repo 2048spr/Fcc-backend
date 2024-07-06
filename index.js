@@ -18,34 +18,31 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-
-// your first API endpoint... 
+// your first API endpoint...
 app.get("/api/:date?", function (req, res) {
   let date = req.params.date;
   let unixFormat, utcFormat, dateObj;
 
-  // Test whether the input date is a number
-  let isUnix = /^\d+$/.test(date);
-
   // If no date specified, use the current date
   if (!date) {
     dateObj = new Date();
+  } else {
+    // Check if the date is a number (UNIX timestamp)
+    let isUnix = /^\d+$/.test(date);
+    if (isUnix) {
+      dateObj = new Date(parseInt(date));
+    } else {
+      dateObj = new Date(date);
+    }
   }
-  // If the date is a UNIX Timestamp
-  else if (date && isUnix) {
-    unixFormat = parseInt(date);
-    dateObj = new Date(unixFormat);
-  }
-  // If the date is not a UNIX time stamp
-  else if (date && !isUnix) {
-    dateObj = new Date(date);
-  }
-  // If the date is of wrong format
+
+  // Check if the date is valid
   if (dateObj.toString() === "Invalid Date") {
     res.json({ error: "Invalid Date" });
     return;
   }
 
+  // Convert the date to UNIX timestamp and UTC string
   unixFormat = dateObj.getTime();
   utcFormat = dateObj.toUTCString();
 
@@ -54,8 +51,6 @@ app.get("/api/:date?", function (req, res) {
     utc: utcFormat
   });
 });
-
-
 
 // Listen on port set in environment variable or default to 3000
 var listener = app.listen(process.env.PORT || 3000, function () {
